@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>प्रभाव AI - Causal Reasoning Engine</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;600;700;800&family=Noto+Sans+Oriya:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --primary: #0ea5e9;
+            --primary-dark: #0284c7;
+            --secondary: #06b6d4;
+            --accent: #14b8a6;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --dark: #0f172a;
+            --light: #f8fafc;
+            --gray: #64748b;
+        }
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml,<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><defs><pattern id="grid" width="100" height="100" patternUnits="userSpaceOnUse"><path d="M 100 0 L 0 0 0 100" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="1"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+            z-index: 0;
+        }
+        .container { max-width: 1600px; margin: 0 auto; padding: 30px; position: relative; z-index: 1; }
+        
+        header { 
+            background: rgba(255,255,255,0.98);
+            color: var(--dark);
+            padding: 50px;
+            border-radius: 24px;
+            margin-bottom: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.3);
+            backdrop-filter: blur(20px);
+            animation: slideDown 0.6s ease-out;
+            position: relative;
+            overflow: hidden;
+        }
+        header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary), var(--accent));
+        }
+        .header-content { display: flex; align-items: center; justify-content: space-between; }
+        .header-left { flex: 1; }
+        h1 { 
+            font-size: 2.5em;
+            margin-bottom: 12px;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-family: 'Noto Sans Devanagari', 'Noto Sans Oriya', 'Inter', sans-serif;
+            line-height: 1.3;
+        }
+        .title-line {
+            display: block;
+            font-size: 0.9em;
+        }
+        .subtitle { 
+            color: var(--gray);
+            font-size: 1.1em;
+            font-weight: 400;
+        }
+        
+        .main-content { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 30px; }
+        
+        .panel { 
+            background: rgba(255,255,255,0.98);
+            padding: 35px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            backdrop-filter: blur(20px);
+            animation: fadeInUp 0.6s ease-out;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .panel:hover { transform: translateY(-5px); box-shadow: 0 15px 50px rgba(0,0,0,0.3); }
+        
+        .query-panel { grid-column: 1 / -1; }
+        
+        h2 { 
+            color: var(--dark);
+            margin-bottom: 25px;
+            font-size: 1.6em;
+            font-weight: 700;
+        }
+        
+        .input-group { margin-bottom: 25px; }
+        label { 
+            display: block;
+            margin-bottom: 10px;
+            color: var(--dark);
+            font-weight: 600;
+            font-size: 0.95em;
+        }
+        
+        input[type="text"], textarea, select { 
+            width: 100%;
+            padding: 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 15px;
+            transition: all 0.3s;
+            background: white;
+            font-family: inherit;
+        }
+        input[type="text"]:focus, textarea:focus, select:focus { 
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(99,102,241,0.1);
+        }
+        textarea { resize: vertical; min-height: 100px; }
+        
+        .button-group { display: flex; gap: 15px; flex-wrap: wrap; }
+        button { 
+            padding: 16px 32px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 600;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+        .btn-primary { 
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            box-shadow: 0 4px 15px rgba(99,102,241,0.4);
+        }
+        .btn-primary:hover { 
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(99,102,241,0.5);
+        }
+        .btn-secondary { background: var(--gray); color: white; }
+        .btn-secondary:hover { background: #475569; transform: translateY(-2px); }
+        .btn-reset { background: var(--danger); color: white; }
+        .btn-reset:hover { background: #dc2626; transform: translateY(-2px); }
+        
+        .radio-group { display: flex; gap: 20px; }
+        .radio-option {
+            flex: 1;
+            position: relative;
+        }
+        .radio-option input[type="radio"] { display: none; }
+        .radio-option label {
+            display: block;
+            padding: 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            font-weight: 600;
+        }
+        .radio-option input[type="radio"]:checked + label {
+            border-color: var(--primary);
+            background: linear-gradient(135deg, rgba(99,102,241,0.1), rgba(139,92,246,0.1));
+            color: var(--primary);
+        }
+        
+        .result-item { 
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            padding: 25px;
+            border-radius: 16px;
+            margin-bottom: 20px;
+            border-left: 5px solid var(--primary);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            animation: fadeIn 0.5s ease-out;
+        }
+        .result-header { 
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+        
+        .evidence-item { 
+            background: white;
+            padding: 20px;
+            margin: 12px 0;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            transition: all 0.3s;
+        }
+        .evidence-item:hover {
+            border-color: var(--primary);
+            box-shadow: 0 4px 20px rgba(99,102,241,0.15);
+            transform: translateX(5px);
+        }
+        
+        .call-id { 
+            display: inline-block;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 12px;
+            margin: 5px;
+            font-weight: 600;
+            box-shadow: 0 2px 8px rgba(99,102,241,0.3);
+        }
+        .score { 
+            color: var(--success);
+            font-weight: 700;
+            background: rgba(16,185,129,0.1);
+            padding: 4px 12px;
+            border-radius: 6px;
+        }
+        
+        .loading { 
+            display: none;
+            text-align: center;
+            padding: 40px;
+            color: var(--primary);
+        }
+        .loading.active { display: block; }
+        .spinner { 
+            border: 4px solid #e2e8f0;
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 20px;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        .history-item { 
+            background: white;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-radius: 12px;
+            border-left: 4px solid var(--secondary);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            transition: all 0.3s;
+        }
+        .history-item:hover {
+            box-shadow: 0 4px 20px rgba(139,92,246,0.2);
+            transform: translateX(5px);
+        }
+        .history-query { 
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 8px;
+        }
+        .history-response { 
+            font-size: 0.9em;
+            color: var(--gray);
+        }
+        
+        .empty-state { 
+            text-align: center;
+            padding: 60px;
+            color: var(--gray);
+            font-style: italic;
+        }
+        
+        .escalation-badge { 
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-weight: 700;
+            margin: 15px 0;
+            font-size: 0.95em;
+            letter-spacing: 0.5px;
+        }
+        .escalated-yes { 
+            background: linear-gradient(135deg, var(--danger), #dc2626);
+            color: white;
+            box-shadow: 0 4px 15px rgba(239,68,68,0.4);
+        }
+        .escalated-no { 
+            background: linear-gradient(135deg, var(--success), #059669);
+            color: white;
+            box-shadow: 0 4px 15px rgba(16,185,129,0.4);
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            border: 2px solid #e2e8f0;
+        }
+        .stat-value {
+            font-size: 2em;
+            font-weight: 800;
+            color: var(--primary);
+        }
+        .stat-label {
+            font-size: 0.85em;
+            color: var(--gray);
+            margin-top: 5px;
+        }
+        
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @media (max-width: 1200px) {
+            .main-content { grid-template-columns: 1fr; }
+            .header-content { flex-direction: column; text-align: center; gap: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <div class="header-left">
+                    <h1>
+                        <span class="title-line">प्रभाव AI</span>
+                        <span class="title-line">ପ୍ରଭାବ AI</span>
+                        <span class="title-line">Prabhav AI</span>
+                    </h1>
+                    <p class="subtitle">Advanced conversational analytics powered by AI</p>
+                </div>
+            </div>
+        </header>
+
+        <div class="main-content">
+            <div class="panel query-panel">
+                <h2>Query Input</h2>
+                <div class="input-group">
+                    <label>Query Type:</label>
+                    <div class="radio-group">
+                        <div class="radio-option">
+                            <input type="radio" id="single" name="queryType" value="single" checked>
+                            <label for="single">Single Query</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" id="followup" name="queryType" value="followup">
+                            <label for="followup">Follow-up Query</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label for="transcriptSelect">Select Transcript ID:</label>
+                    <select id="transcriptSelect">
+                        <option value="">-- All Transcripts --</option>
+                        {% for tid in transcript_ids %}
+                        <option value="{{ tid }}">{{ tid }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label for="queryInput">Enter your analytical query:</label>
+                    <textarea id="queryInput" placeholder="e.g., Why do customers escalate complaints after long wait times?"></textarea>
+                </div>
+                <div class="button-group">
+                    <button class="btn-primary" onclick="submitQuery()">Analyze</button>
+                    <button class="btn-secondary" onclick="clearQuery()">Clear</button>
+                    <button class="btn-reset" onclick="resetSession()">Reset Session</button>
+                </div>
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <p>Analyzing conversational data...</p>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h2>Causal Explanation</h2>
+                <div id="results">
+                    <div class="empty-state">
+                        <p>Submit a query to see causal analysis</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h2>Conversation History</h2>
+                <div id="history">
+                    <div class="empty-state">
+                        <p>No queries yet</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let conversationHistory = [];
+
+        async function submitQuery() {
+            const query = document.getElementById('queryInput').value.trim();
+            const transcriptId = document.getElementById('transcriptSelect').value;
+            
+            if (!query) {
+                showNotification('Please enter a query', 'warning');
+                return;
+            }
+
+            const queryType = document.querySelector('input[name="queryType"]:checked').value;
+            
+            document.getElementById('loading').classList.add('active');
+            document.getElementById('results').innerHTML = '';
+
+            try {
+                const response = await fetch('/query', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ query, type: queryType, transcript_id: transcriptId })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    throw new Error('Server returned non-JSON response');
+                }
+
+                const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                
+                displayResults(data);
+                updateHistory(query, data);
+                conversationHistory.push({ query, response: data });
+                showNotification('Analysis completed successfully!', 'success');
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('results').innerHTML = `
+                    <div class="result-item" style="border-left-color: var(--danger);">
+                        <div class="result-header">Error</div>
+                        <p>${error.message}</p>
+                    </div>`;
+                showNotification('Analysis failed: ' + error.message, 'error');
+            } finally {
+                document.getElementById('loading').classList.remove('active');
+            }
+        }
+
+        function displayResults(data) {
+            const resultsDiv = document.getElementById('results');
+            const escalationBadge = data.escalated 
+                ? '<span class="escalation-badge escalated-yes">ESCALATED</span>'
+                : '<span class="escalation-badge escalated-no">NOT ESCALATED</span>';
+            
+            let html = `
+                <div class="result-item">
+                    <div class="result-header">Query</div>
+                    <p>${data.query}</p>
+                    ${escalationBadge}
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value">${data.transcript_ids.length}</div>
+                        <div class="stat-label">Transcripts</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${data.call_ids.length}</div>
+                        <div class="stat-label">Calls</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${data.evidence.length}</div>
+                        <div class="stat-label">Evidence</div>
+                    </div>
+                </div>
+                
+                <div class="result-item">
+                    <div class="result-header">Relevant Transcript IDs</div>
+                    ${data.transcript_ids.map(id => `<span class="call-id">${id}</span>`).join('')}
+                </div>
+                
+                <div class="result-item">
+                    <div class="result-header">Call IDs</div>
+                    ${data.call_ids.map(id => `<span class="call-id">${id}</span>`).join('')}
+                </div>
+                
+                <div class="result-item">
+                    <div class="result-header">Evidence</div>
+                    ${data.evidence.map(e => `
+                        <div class="evidence-item">
+                            <strong>Transcript ID:</strong> ${e.transcript_id}<br>
+                            <strong>Call ID:</strong> ${e.call_id}<br>
+                            <strong>Speaker:</strong> ${e.speaker}<br>
+                            <strong>Turn:</strong> ${e.turn}<br>
+                            <strong>Relevance:</strong> <span class="score">${(e.relevance_score * 100).toFixed(1)}%</span>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+
+            if (data.causal_factors && data.causal_factors.length > 0) {
+                html += `
+                    <div class="result-item">
+                        <div class="result-header">Causal Factors</div>
+                        ${data.causal_factors.map(f => `
+                            <div class="evidence-item">
+                                <strong>${f.factor}:</strong> ${f.frequency} occurrences
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+
+            resultsDiv.innerHTML = html;
+        }
+
+        function updateHistory(query, response) {
+            const historyDiv = document.getElementById('history');
+            const historyItem = document.createElement('div');
+            historyItem.className = 'history-item';
+            historyItem.innerHTML = `
+                <div class="history-query">Q: ${query}</div>
+                <div class="history-response">
+                    Found ${response.call_ids.length} relevant calls with ${response.evidence.length} evidence items
+                </div>
+            `;
+            
+            if (historyDiv.querySelector('.empty-state')) {
+                historyDiv.innerHTML = '';
+            }
+            
+            historyDiv.insertBefore(historyItem, historyDiv.firstChild);
+        }
+
+        function clearQuery() {
+            document.getElementById('queryInput').value = '';
+            showNotification('Query cleared', 'info');
+        }
+
+        async function resetSession() {
+            if (confirm('Reset conversation history?')) {
+                await fetch('/reset', { method: 'POST' });
+                conversationHistory = [];
+                document.getElementById('history').innerHTML = '<div class="empty-state"><p>No queries yet</p></div>';
+                document.getElementById('results').innerHTML = '<div class="empty-state"><p>Submit a query to see causal analysis</p></div>';
+                document.getElementById('queryInput').value = '';
+                document.querySelector('input[name="queryType"][value="single"]').checked = true;
+                showNotification('Session reset successfully', 'success');
+            }
+        }
+
+        function showNotification(message, type) {
+            // Simple notification - you can enhance this with a toast library
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+
+        document.getElementById('queryInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && e.ctrlKey) {
+                submitQuery();
+            }
+        });
+    </script>
+</body>
+</html>

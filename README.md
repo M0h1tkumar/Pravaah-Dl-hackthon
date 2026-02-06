@@ -3,6 +3,31 @@
 ## Project Overview
 This project implements a grounded causal reasoning system for the Pravaah DL Hackathon. The system uses advanced NLP techniques, sentence transformers, and FAISS indexing to perform causal analysis on conversational data.
 
+## Web Application UI
+
+The project includes a modern, responsive web interface with:
+
+### Features:
+- **Modern Design**: Beautiful gradient backgrounds with glassmorphism effects
+- **Responsive Layout**: Works seamlessly on desktop and mobile devices
+- **Interactive Elements**: Smooth animations and hover effects
+- **Real-time Analysis**: Live query processing with loading indicators
+- **Visual Statistics**: Dashboard-style metrics display
+- **Conversation History**: Track all your queries in one place
+- **Font Awesome Icons**: Professional iconography throughout
+
+### Running the Web App:
+```bash
+# Start the Flask server
+python app.py
+
+# Or use the batch file (Windows)
+start_webapp.bat
+
+# Open browser to:
+http://localhost:5000
+```
+
 ## Repository Structure
 ```
 .
